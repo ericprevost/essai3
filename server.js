@@ -50,6 +50,42 @@ app.post('/update-birthdate', async (req, res) => {
     res.status(500).send({ error: 'Erreur serveur' });
   }
 });
+app.post('/update-product', async (req, res) => {
+  const { productId, key, value } = req.body;
+
+  const metafield = {
+    metafield: {
+      namespace: "custom",
+      key: key,               // ex: "fabricant"
+      type: "single_line_text_field",
+      value: value            // ex: "France"
+    }
+  };
+
+  try {
+    const response = await fetch(`https://${SHOP}/admin/api/2024-04/products/${productId}/metafields.json`, {
+      method: 'POST',
+      headers: {
+        'X-Shopify-Access-Token': ACCESS_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(metafield)
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      res.status(200).send({ success: true, data });
+    } else {
+      res.status(response.status).send({ error: data.errors });
+    }
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ error: 'Erreur serveur' });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur en ligne sur le port ${PORT}`));
